@@ -28,5 +28,3 @@ class SignUpView(View):
             return JsonResponse({'Message':'INVALID_KEY'},status = 400)
         except ValidationError:
             return JsonResponse({'Message': 'VALIDATION_ERROR'}, status = 400)
-        except AttributeError:
-            return JsonResponse({'Message': 'ATTRIBUTE_ERROR'},status = 400)
