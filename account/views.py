@@ -3,6 +3,7 @@ import json,bcrypt,jwt
 from django.views           import View
 from django.http            import HttpResponse,JsonResponse
 from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from .models                import User
 from converse.settings      import SECRET_KEY
 
@@ -35,15 +36,17 @@ class SignInView(View):
     def post(self,request):
         data = json.loads(request.body)
         try:
-            data_email = data['email']
-            data_password = data['password']
+            validate_email(data['email'])
 
-            if User.objects.filter(email = data_email).exists():
-                user = User.objects.get(email = data_email)
+            if User.objects.filter(email = data['email']).exists():
+                user = User.objects.get(email = data['email'])
 
-                if bcrypt.checkpw(data_password.encode('utf-8'), user.password.encode('utf-8')):
-                    access_token = jwt.encode({'user_id':user.id}, SECRET_KEY, algorithm = 'HS256')
-                    return JsonResponse({'access_token':access_token.decode('utf-8')}, status = 200)
-            return JsonResponse({'Message':'INVALID_USER'}, status = 401)
-        except  KeyError:
-            return JsonResponse({'Message':'INVALID_KEY'}, status = 400)
+                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
+                    access_token = jwt.encode({'user_id' : user.id}, SECRET_KEY, algorithm = 'HS256')
+                    return JsonResponse({'access_token' : access_token.decode('utf-8')}, status = 200)
+
+            return JsonResponse({'Message' : 'INVALID_USER'}, status = 401)
+        except KeyError:
+            return JsonResponse({'Message' : 'INVALID_KEY'}, status = 400)
+        except ValidationError:
+            return JsonResponse({'Message' : 'VALIDATION_ERROR'},status = 400)
