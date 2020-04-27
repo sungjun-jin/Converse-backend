@@ -26,6 +26,10 @@ my_settings.py
 # C extensions
 *.so
 
+# Data
+.data
+csv_sql.py
+
 # Distribution / packaging
 .Python
 build/
