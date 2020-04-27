@@ -1,4 +1,4 @@
-import json,bcrypt,jwt
+import json,bcrypt,jwt,re
 
 from django.views           import View
 from django.http            import HttpResponse,JsonResponse
@@ -12,9 +12,22 @@ class SignUpView(View):
     def post(self,request):
         data = json.loads(request.body)
         try:
+            validate_email(data['email'])
+
             if User.objects.filter(email = data['email']).exists():
                 return JsonResponse({'Message' : 'USER_ALREADY_EXISTS'}, status = 400)
-            hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'),bcrypt.gensalt())
+
+            if not re.match(r'(?=.*[A-Za-z])(?=.*[!@#$%^&*()_+=-])(?=.*[0-9]){8,}', data['password']):
+                return JsonResponse({'Message' : 'PASSWORD_VALIDATION_ERROR'}, status = 400)
+
+            if not re.match(r'(?=.*[0-9]{8,})', data['birth']):
+                return JsonResponse({'Message': 'BIRTHDAY_VALIDATION_ERROR'}, status = 400)
+
+            if '-' in data['phone']:
+                return JsonResponse({'Message' : 'PHONE_NUMBER_VALIDATION_ERROR'}, status = 400)
+
+            hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+
             User (
                 email         = data['email'],
                 password      = hashed_password.decode('utf-8'),
@@ -25,9 +38,12 @@ class SignUpView(View):
                 email_confirm = data['email_confirm'],
                 text_confirm  = data['text_confirm']
             ).save()
+
             return HttpResponse(status = 200)
+
         except KeyError:
-            return JsonResponse({'Message':'INVALID_KEY'},status = 400)
+            return JsonResponse({'Message':'INVALID_KEY'}, status = 400)
+
         except ValidationError:
             return JsonResponse({'Message': 'VALIDATION_ERROR'}, status = 400)
 
@@ -36,7 +52,6 @@ class SignInView(View):
     def post(self,request):
         data = json.loads(request.body)
         try:
-            validate_email(data['email'])
 
             if User.objects.filter(email = data['email']).exists():
                 user = User.objects.get(email = data['email'])
@@ -46,7 +61,6 @@ class SignInView(View):
                     return JsonResponse({'access_token' : access_token.decode('utf-8')}, status = 200)
 
             return JsonResponse({'Message' : 'INVALID_USER'}, status = 401)
+
         except KeyError:
             return JsonResponse({'Message' : 'INVALID_KEY'}, status = 400)
-        except ValidationError:
-            return JsonResponse({'Message' : 'VALIDATION_ERROR'},status = 400)
