@@ -9,7 +9,7 @@ class DetailView(View):
 
     def get(self,request,product_code):
         try:
-            selected_product = Product.objects.select_related('detail').prefetch_related('media_set', 'series_set').get(code = product_code)
+            selected_product = Product.objects.select_related('detail').prefetch_related('media_set', 'series_set','productsize_set').get(code = product_code)
 
             data = [{
                 'code'         : selected_product.code,
@@ -18,7 +18,7 @@ class DetailView(View):
                 'gender'       : selected_product.gender,
                 'summary'      : selected_product.detail.summary,
                 'color_name'   : selected_product.color_name,
-                'size_list'    : [selected_size.size for selected_size in Size.objects.prefetch_related('productsize_set').filter(product = selected_product)],
+                'size_list'    : [size.size.size for size in selected_product.productsize_set.all()],
                 'size_img'     : selected_product.detail.size_img,
                 'series_code'  : [series.code for series in selected_product.series_set.all()],
                 'series_image' : [series.image for series in selected_product.series_set.all()],
