@@ -1,13 +1,22 @@
-import json,bcrypt,jwt,re
+import json
+import bcrypt
+import jwt
+import re
 
 from django.views           import View
 from django.http            import HttpResponse,JsonResponse
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+
 from .models                import User
 from converse.settings      import SECRET_KEY
 
 class SignUpView(View):
+    VALIDATIONS = {
+        'password' : lambda password : True if re.match(r'(?=.*[A-Za-z])(?=.*[!@#$%^&*()_+=-])(?=.*[0-9]){8,}', password) else False,
+        'birth'    : lambda birth    : True if re.match(r'(?=.*[0-9]{8,})', birth) else False,
+        'phone'    : lambda phone    : True if '-' not in phone else False
+    }
 
     def post(self,request):
         data = json.loads(request.body)
@@ -17,17 +26,11 @@ class SignUpView(View):
             if User.objects.filter(email = data['email']).exists():
                 return JsonResponse({'Message' : 'USER_ALREADY_EXISTS'}, status = 400)
 
-            if not re.match(r'(?=.*[A-Za-z])(?=.*[!@#$%^&*()_+=-])(?=.*[0-9]){8,}', data['password']):
-                return JsonResponse({'Message' : 'PASSWORD_VALIDATION_ERROR'}, status = 400)
-
-            if not re.match(r'(?=.*[0-9]{8,})', data['birth']):
-                return JsonResponse({'Message': 'BIRTHDAY_VALIDATION_ERROR'}, status = 400)
-
-            if '-' in data['phone']:
-                return JsonResponse({'Message' : 'PHONE_NUMBER_VALIDATION_ERROR'}, status = 400)
+            for validation_name, validate in self.VALIDATIONS.items():
+                if not validate(data[validation_name]):
+                    return JsonResponse({'Message' : f'{validation_name.upper()}_VALIDATION_ERROR'}, status = 400)
 
             hashed_password = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
-
             User (
                 email         = data['email'],
                 password      = hashed_password.decode('utf-8'),
@@ -48,7 +51,6 @@ class SignUpView(View):
             return JsonResponse({'Message': 'VALIDATION_ERROR'}, status = 400)
 
 class SignInView(View):
-
     def post(self,request):
         data = json.loads(request.body)
         try:
