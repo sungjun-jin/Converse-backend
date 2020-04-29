@@ -3,13 +3,19 @@ import json
 from django.http  import JsonResponse,HttpResponse
 from django.views import View
 
-from .models      import Product, Detail, Series, Media, Size
+from .models      import (
+    Product,
+    Detail,
+    Series,
+    Media,
+    Size,
+    Description
+)
 
 class DetailView(View):
-
     def get(self,request,product_code):
         try:
-            selected_product = Product.objects.select_related('detail').prefetch_related('media_set', 'series_set','productsize_set').get(code = product_code)
+            selected_product = Product.objects.select_related('detail').prefetch_related('media_set', 'series_set','description_set','productsize_set').get(code = product_code)
 
             data = [{
                 'code'         : selected_product.code,
@@ -23,7 +29,7 @@ class DetailView(View):
                 'series_code'  : [series.code for series in selected_product.series_set.all()],
                 'series_image' : [series.image for series in selected_product.series_set.all()],
                 'media_url'    : [media.media_url for media in selected_product.media_set.all()],
-                'description'  : selected_product.detail.description,
+                'description'  : [description.string for description in selected_product.description_set.all()],
                 'desc_img'     : selected_product.detail.desc_img,
                 'information'  : selected_product.detail.information,
             }]

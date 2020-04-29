@@ -1,3 +1,5 @@
+import jsonfield
+
 from django.db import models
 
 class Category(models.Model):
@@ -33,12 +35,18 @@ class Product(models.Model):
 class Detail(models.Model):
     summary     = models.CharField(max_length = 500)
     size_img    = models.URLField(max_length = 2000, null = True)
-    description = models.TextField()
     desc_img    = models.URLField(max_length = 2000)
-    information = models.TextField()
+    information = jsonfield.JSONField()
 
     class Meta:
         db_table = 'details'
+
+class Description(models.Model):
+    string  = models.CharField(max_length = 500, null = True)
+    product = models.ForeignKey('Product', on_delete = models.SET_NULL, null = True)
+
+    class Meta:
+        db_table = 'descriptions'
 
 class Series(models.Model):
     code    = models.CharField(max_length = 500, null = True)
