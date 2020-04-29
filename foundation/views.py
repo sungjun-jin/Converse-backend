@@ -1,10 +1,10 @@
 import json
 
-from django.http       import JsonResponse,HttpResponse
-from django.views      import View
+from django.http    import JsonResponse,HttpResponse
+from django.views   import View
 
-from product.models    import Product,Media
-from .models           import MainPage,Instagram
+from product.models import Product,Media
+from .models        import MainPage, Instagram
 
 class MainPageView(View):
     def get(self,request):
@@ -24,6 +24,7 @@ class MainPageView(View):
                     list(MainPage.objects.filter(id = 1).values()),
                     [{
                         'name'  : happy_camper.name,
+                        'code'  : happy_camper.code,
                         'price' : happy_camper.price,
                         'url'   : happy_camper.media_set.values('media_url').first()['media_url'],
                         'hover' : happy_camper.media_set.values('media_url')[1]['media_url'],
@@ -33,6 +34,7 @@ class MainPageView(View):
                     list(MainPage.objects.filter(id = 3).values()),
                     [{
                         'name'  : pro_leather.name,
+                        'code'  : pro_leather.code,
                         'price' : pro_leather.price,
                         'url'   : pro_leather.media_set.values('media_url').first()['media_url'],
                         'hover' : pro_leather.media_set.values('media_url')[1]['media_url'],
@@ -46,6 +48,7 @@ class MainPageView(View):
                     list(MainPage.objects.filter(id = 9).values()),
                     [{
                         'name'  : g4s[1].name,
+                        'code'  : g4s[1].code,
                         'price' : g4s[1].price,
                         'url'   : g4s[1].media_set.values('media_url').first()['media_url'],
                         'hover' : g4s[1].media_set.values('media_url')[1]['media_url'],
@@ -53,6 +56,7 @@ class MainPageView(View):
                     },
                     {
                         'name'  : g4s[3].name,
+                        'code'  : g4s[3].code,
                         'price' : g4s[3].price,
                         'url'   : g4s[3].media_set.values('media_url').first()['media_url'],
                         'hover' : g4s[3].media_set.values('media_url')[1]['media_url'],
@@ -62,12 +66,14 @@ class MainPageView(View):
                     [{
                         'name'  : jack_purcells[0].name,
                         'price' : jack_purcells[0].price,
+                        'code'  : jack_purcells[0].code,
                         'url'   : jack_purcells[0].media_set.values('media_url').first()['media_url'],
                         'hover' : jack_purcells[0].media_set.values('media_url')[1]['media_url'],
                         'size'  : 1
                     },
                     {
                         'name'  : jack_purcells[1].name,
+                        'code'  : jack_purcells[1].code,
                         'price' : jack_purcells[1].price,
                         'url'   : jack_purcells[1].media_set.values('media_url').first()['media_url'],
                         'hover' : jack_purcells[1].media_set.values('media_url')[1]['media_url'],
@@ -77,6 +83,7 @@ class MainPageView(View):
                     list(MainPage.objects.filter(id = 12).values()),
                     [{
                         'name'  : archive_prints[11].name,
+                        'code'  : archive_prints[11].code,
                         'price' : archive_prints[11].price,
                         'url'   : archive_prints[11].media_set.values('media_url').first()['media_url'],
                         'hover' : archive_prints[11].media_set.values('media_url')[1]['media_url'],
@@ -84,6 +91,7 @@ class MainPageView(View):
                     },
                     {
                         'name'  : archive_prints[5].name,
+                        'code'  : archive_prints[5].code,
                         'price' : archive_prints[5].price,
                         'url'   : archive_prints[5].media_set.values('media_url').first()['media_url'],
                         'hover' : archive_prints[5].media_set.values('media_url')[1]['media_url'],
@@ -91,6 +99,7 @@ class MainPageView(View):
                     },
                     {
                         'name'  : archive_prints[0].name,
+                        'code'  : archive_prints[0].code,
                         'price' : archive_prints[0].price,
                         'url'   : archive_prints[0].media_set.values('media_url').first()['media_url'],
                         'hover' : archive_prints[0].media_set.values('media_url')[1]['media_url'],
@@ -98,13 +107,14 @@ class MainPageView(View):
                     },
                     {
                         'name'  : archive_prints.last().name,
+                        'code'  : archive_prints.last().code,
                         'price' : archive_prints.last().price,
                         'url'   : archive_prints.last().media_set.values('media_url').first()['media_url'],
                         'hover' : archive_prints.last().media_set.values('media_url')[1]['media_url'],
                         'size'  : 1,
                     }],
-                    ]
-                }
+                ]
+            }
 
         return JsonResponse({'data' : data, 'instagrams' : getInstagramData()}, status = 200)
 
