@@ -1,9 +1,12 @@
 from django.db import models
 
 class MainPage(models.Model):
-    name = models.CharField(max_length = 200)
-    url  = models.URLField(max_length = 2000)
-    size = models.IntegerField()
+    name              = models.CharField(max_length = 200)
+    url               = models.URLField(max_length = 2000)
+    title             = models.CharField(max_length = 200)
+    description       = models.CharField(max_length = 400)
+    hover_description = models.CharField(max_length = 400)
+    size              = models.IntegerField()
 
     class Meta:
         db_table = 'main_pages'
