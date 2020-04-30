@@ -34,7 +34,18 @@ class DetailView(View):
                 'information'  : selected_product.detail.information,
             }]
 
-            return JsonResponse({'product_detail' : data}, status = 200)
+            return JsonResponse({'product_detail' : data, 'recommendations' : get_recommendations(selected_product)}, status = 200)
 
         except Product.DoesNotExist:
             return JsonResponse({'Message' : 'PRODUCT_DOES_NOT_EXIST'}, status = 400)
+
+def get_recommendations(selected_product):
+    recommendations = Product.objects.select_related('group').prefetch_related('media_set').filter(group = selected_product.group)[:10]
+    data = [{
+            'code'  : recommendation.code,
+            'url'   : recommendation.media_set.filter(media_url__contains = 'primary').first().media_url,
+            'hover' : recommendation.media_set.filter()[2].media_url,
+    } for recommendation in recommendations]
+
+    return data
+
