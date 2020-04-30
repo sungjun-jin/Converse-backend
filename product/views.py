@@ -35,7 +35,7 @@ class DetailView(View):
                 'information'  : selected_product.detail.information,
             }]
 
-            return JsonResponse({'product_detail' : data, 'instagram' : get_instagram_data(), 'recommendations' : get_recommendations()}, status = 200)
+            return JsonResponse({'product_detail' : data, 'instagram' : get_instagram_data(), 'recommendations' : get_recommendations(selected_product)}, status = 200)
 
         except Product.DoesNotExist:
             return JsonResponse({'Message' : 'PRODUCT_DOES_NOT_EXIST'}, status = 400)

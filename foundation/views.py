@@ -23,7 +23,6 @@ class MainPageView(View):
                 'price' : product.price,
                 'url'   : product.media_set.values('media_url').first()['media_url'],
                 'hover' : product.media_set.values('media_url')[1]['media_url'],
-                'size'  : 1,
 
             } for product in products]
 
@@ -39,6 +38,5 @@ class StoreView(View):
         return JsonResponse({'stores' : list(stores)}, status = 200)
 
 def get_instagram_data():
-    insta_dict = {}
     data = Instagram.objects.values()
     return list(data)
