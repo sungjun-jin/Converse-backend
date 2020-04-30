@@ -42,7 +42,7 @@ class SignUpView(View):
                 text_confirm  = data['text_confirm']
             ).save()
 
-            return HttpResponse(status = 200)
+            return JsonResponse({'Message' : 'OK'}, status = 200)
 
         except KeyError:
             return JsonResponse({'Message':'INVALID_KEY'}, status = 400)
