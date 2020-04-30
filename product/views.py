@@ -74,22 +74,22 @@ class ProductView(View):
                     if '#' in source['code']:
 
                         source['code'] = source['code'].replace('#','')
-                        image = sources.get(code=source['code']).media_set.values('media_url')[0]['media_url']
+                        image = sources.get(code=source['code']).media_set.values('media_url').first['media_url']
 
                     product['color_list'].append({
                         'color_code' : sources.get(code=source['code']
-                                                  ).product_color.values('color_code')[0]['color_code'],
+                                                  ).product_color.values('color_code').first()['color_code'],
                         'image'      : image,
                         'hover'      : image.replace('primary','hover')
                     })
 
             except Product.DoesNotExist:
 
-                image = sources.get(id=product['id']).media_set.values('media_url')[0]['media_url']
+                image = sources.get(id=product['id']).media_set.values('media_url').first()['media_url']
 
                 product['color_list'] = {
                     'color_code' : sources.get(id=product['id']
-                                              ).product_color.values('color_code')[0]['color_code'],
+                                              ).product_color.values('color_code').first()['color_code'],
                     'image'      : image,
                     'hover'      : image.replace('primary','hover')}
 
