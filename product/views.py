@@ -1,23 +1,17 @@
 import json
 
-from django.http  import JsonResponse,HttpResponse
-from django.views import View
+from django.http      import JsonResponse,HttpResponse
+from django.views     import View
+from django.db.models import Q
 
-from .models      import (
-    Product,
-    Detail,
-    Series,
-    Media,
-    Size,
-    Description
-)
+from .models          import *
 
 class FilterView(View):
 
     def get(self, request,category_name):
 
-        product  = Product.objects.filter(category__name = category_name)
-        product |= Product.objects.filter(group__name = category_name)
+        product = Product.objects.filter(
+            Q(category__name = category_name)| Q(group__name = category_name))
 
         return JsonResponse(
             {
@@ -27,12 +21,12 @@ class FilterView(View):
                             gender['gender'] for gender in product.values('gender')]
                         ).difference(['남녀공용','유니섹스'])
                     ),
-                    'color' : {
-                        value[0]:value[1] for (key,value) in sorted(
+                    'color' : [
+                        {'name':value[0], 'code':value[1]} for (key,value) in sorted(
                             {
                                 color['id'] : (color['color_name'],color['color_code'])
                                 for color in Color.objects.filter(product__in = product).values()
-                            }.items())},
+                            }.items())],
                     'size':[
                         size[1] for size in sorted(
                             {
@@ -52,8 +46,8 @@ class ProductView(View):
 
     def get(self, request,category_name):
 
-        products  = Product.objects.filter(category__name=category_name)
-        products |= Product.objects.filter(group__name=category_name)
+        products  = Product.objects.filter(
+            Q(category__name = category_name)| Q(group__name = category_name))
 
         filter_dict = {}
 
@@ -72,25 +66,32 @@ class ProductView(View):
         for product in product_list:
 
             try:
+
                 product['color_list'] = []
 
                 for source in sources.get(code=product['code']).series_set.values('code'):
 
                     if '#' in source['code']:
+
                         source['code'] = source['code'].replace('#','')
+                        image = sources.get(code=source['code']).media_set.values('media_url')[0]['media_url']
 
                     product['color_list'].append({
-                        'color_code' : sources.get(code=source['code']).product_color.values('color_code')[0]['color_code'],
-                        'image'      : sources.get(code=source['code']).media_set.values('media_url')[0]['media_url'],
-                        'hover'      : sources.get(code=source['code']).media_set.values('media_url')[0]['media_url'].replace('primary','hover')
+                        'color_code' : sources.get(code=source['code']
+                                                  ).product_color.values('color_code')[0]['color_code'],
+                        'image'      : image,
+                        'hover'      : image.replace('primary','hover')
                     })
 
             except Product.DoesNotExist:
 
+                image = sources.get(id=product['id']).media_set.values('media_url')[0]['media_url']
+
                 product['color_list'] = {
-                    'color_code' : sources.get(id=product['id']).product_color.values('color_code')[0]['color_code'],
-                    'image'      : sources.get(id=product['id']).media_set.values('media_url')[0]['media_url'],
-                    'hover'      : sources.get(id=product['id']).media_set.values('media_url')[0]['media_url'].replace('primary','hover')}
+                    'color_code' : sources.get(id=product['id']
+                                              ).product_color.values('color_code')[0]['color_code'],
+                    'image'      : image,
+                    'hover'      : image.replace('primary','hover')}
 
         return JsonResponse({'product' : product_list},status=200)
 

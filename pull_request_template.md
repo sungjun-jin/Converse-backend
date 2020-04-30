@@ -12,7 +12,7 @@ Wecode PR message template 및 체크 리스트 입니다.
     - 카테고리/그룹에 대한 분리가 소스 페이지 ( Converse ) 에서도 명확하지 않은 경우가 있습니다.
     - 따라서, 두가지 경우를 모두 처리한 후 병합하는 방식을 사용했습니다.
 
-- 2. Front 단에서 처리할때 필요한 필터 선택범위를 return 하는 FilterView End-Point 를 구성했습니다.
+- 2. Front 단에서 처리할때 필요한 필터 선택범위를 Response 하는 FilterView End-Point 를 구성했습니다.
     - 위에서 정의한 ' 큰 틀로 묶이는 제품들 ' 이 가질 수 있는 선택범위를 병합하여 작업하였습니다.
 
 - 3. 초기 정보값 ( 카테고리/그룹 ) 으로 묶이는 제품범위를 return 하도록 작업하였습니다.
@@ -20,6 +20,10 @@ Wecode PR message template 및 체크 리스트 입니다.
 
 - 4. Front 단에서 필터링 요청이 들어오면, 그에 맞춰 필터링하는 기능을 구현했습니다.
     - 요청은 소스 페이지 ( Converse ) 에서 처리한 방식과 같은 GET Method 를 이용합니다.
+
+- 추가 : PR 요청 이후에 받은 Feedback 과 Front 단과의 협의가 이루어진 부분에 대한 수정이 있었습니다.
+    - django 의 Q 처리방식으로 초기값이 될 제품범위에 대한 병합 처리방식을 효율적으로 변경했습니다.
+    - 기존 FilterView 의 Response 중 ' color ' key 에 대한 데이터들을 호출할 방법이 모호하여, 협의 후 수정하였습니다.
 
 - 추가 : DB 연동 ( Migration ) 과정에 문제가 있어, 사소한 수정을 했습니다. 수정사항은 다음과 같습니다.
     - 각 프로젝트의 ' migrations ' 디렉토리의 migration 파일들을 삭제했습니다.
