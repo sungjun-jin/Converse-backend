@@ -7,6 +7,7 @@ class MainPage(models.Model):
     description       = models.CharField(max_length = 400)
     hover_description = models.CharField(max_length = 400)
     size              = models.IntegerField()
+    code              = models.CharField(max_length = 30)
 
     class Meta:
         db_table = 'main_pages'
