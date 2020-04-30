@@ -12,6 +12,88 @@ from .models      import (
     Description
 )
 
+class FilterView(View):
+
+    def get(self, request,category_name):
+
+        product  = Product.objects.filter(category__name = category_name)
+        product |= Product.objects.filter(group__name = category_name)
+
+        return JsonResponse(
+            {
+                'filter' : {
+                    'gender':list(
+                        set([
+                            gender['gender'] for gender in product.values('gender')]
+                        ).difference(['남녀공용','유니섹스'])
+                    ),
+                    'color' : {
+                        value[0]:value[1] for (key,value) in sorted(
+                            {
+                                color['id'] : (color['color_name'],color['color_code'])
+                                for color in Color.objects.filter(product__in = product).values()
+                            }.items())},
+                    'size':[
+                        size[1] for size in sorted(
+                            {
+                                size['id']:size['size']
+                                for size in Size.objects.filter(product__in=product).values()
+                            }.items())],
+                    'silhouette':[
+                        value for (key,value) in sorted(
+                            {
+                                silhouette['id']:silhouette['name']
+                                for silhouette in Silhouette.objects.filter(product__in=product).values()
+                            }.items())]
+                }
+            }, status=200)
+
+class ProductView(View):
+
+    def get(self, request,category_name):
+
+        products  = Product.objects.filter(category__name=category_name)
+        products |= Product.objects.filter(group__name=category_name)
+
+        filter_dict = {}
+
+        if request.GET.getlist('gender', None):
+            filter_dict['gender__in'] = request.GET.getlist('gender', None)+['남녀공용','유니섹스']
+        if request.GET.getlist('color', None):
+            filter_dict['product_color__color_code__in'] = request.GET.getlist('color', None)
+        if request.GET.getlist('size', None):
+            filter_dict['product_size__size'] = request.GET.getlist('size', None)
+        if request.GET.getlist('silhouette', None):
+            filter_dict['silhouette_id__name__in'] = request.GET.getlist('silhouette', None)
+
+        sources      = products.prefetch_related('series_set','media_set','product_color')
+        product_list = [product for product in products.filter(**filter_dict).values('id','code','name','price')][:20]
+
+        for product in product_list:
+
+            try:
+                product['color_list'] = []
+
+                for source in sources.get(code=product['code']).series_set.values('code'):
+
+                    if '#' in source['code']:
+                        source['code'] = source['code'].replace('#','')
+
+                    product['color_list'].append({
+                        'color_code' : sources.get(code=source['code']).product_color.values('color_code')[0]['color_code'],
+                        'image'      : sources.get(code=source['code']).media_set.values('media_url')[0]['media_url'],
+                        'hover'      : sources.get(code=source['code']).media_set.values('media_url')[0]['media_url'].replace('primary','hover')
+                    })
+
+            except Product.DoesNotExist:
+
+                product['color_list'] = {
+                    'color_code' : sources.get(id=product['id']).product_color.values('color_code')[0]['color_code'],
+                    'image'      : sources.get(id=product['id']).media_set.values('media_url')[0]['media_url'],
+                    'hover'      : sources.get(id=product['id']).media_set.values('media_url')[0]['media_url'].replace('primary','hover')}
+
+        return JsonResponse({'product' : product_list},status=200)
+
 class DetailView(View):
     def get(self,request,product_code):
         try:
