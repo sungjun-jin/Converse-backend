@@ -27,7 +27,7 @@ class CartView(View):
     @login_required
     def get(self,request):
         request_user = User.objects.get(id = request.user.id)
-        carts = Cart.objects.select_related('product', 'size').filter(user = request_user)
+        carts = Cart.objects.select_related('product', 'size').prefetch_related('product__media_set').filter(user = request_user)
         data = [
             {
             'name':cart.product.name,
@@ -36,7 +36,6 @@ class CartView(View):
             'size' : cart.size.size,
             'quantity' : cart.quantity,
             'price' : cart.product.price,
-
-        } for cart in carts]
+            } for cart in carts]
 
         return JsonResponse({'cart_list' : data}, status = 200)

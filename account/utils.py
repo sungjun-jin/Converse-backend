@@ -2,7 +2,7 @@ import jwt
 
 from django.http            import JsonResponse
 
-from converse.settings import SECRET_KEY
+from converse.settings      import SECRET_KEY
 from .models                import User
 
 def login_required(func):
