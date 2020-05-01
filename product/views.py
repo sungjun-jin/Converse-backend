@@ -54,14 +54,14 @@ class ProductView(View):
         if request.GET.getlist('gender', None):
             filter_dict['gender__in'] = request.GET.getlist('gender', None)+['남녀공용','유니섹스']
         if request.GET.getlist('color', None):
-            filter_dict['product_color__color_code__in'] = request.GET.getlist('color', None)
+            filter_dict['product_color__color_code__in'] = ['#'+color for color in request.GET.getlist('color', None)]
         if request.GET.getlist('size', None):
-            filter_dict['product_size__size'] = request.GET.getlist('size', None)
+            filter_dict['product_size__size__in'] = request.GET.getlist('size', None)
         if request.GET.getlist('silhouette', None):
             filter_dict['silhouette_id__name__in'] = request.GET.getlist('silhouette', None)
 
         sources      = products.prefetch_related('series_set','media_set','product_color')
-        product_list = [product for product in products.filter(**filter_dict).values('id','code','name','price')][:20]
+        product_list = [product for product in products.filter(**filter_dict).values('id','code','name','price')][:30]
 
         for product in product_list:
 
@@ -74,7 +74,11 @@ class ProductView(View):
                     if '#' in source['code']:
 
                         source['code'] = source['code'].replace('#','')
-                        image = sources.get(code=source['code']).media_set.values('media_url').first['media_url']
+
+                    image = sources.get(code=source['code']).media_set.values('media_url').first()['media_url']
+                    if 'primary' not in image:
+                        image = sources.get(code=source['code']).media_set.values('media_url')[1]['media_url']
+
 
                     product['color_list'].append({
                         'color_code' : sources.get(code=source['code']
