@@ -3,7 +3,7 @@ import json
 from django.http      import JsonResponse,HttpResponse
 from django.views     import View
 from django.db.models import Q
-
+from foundation.views import get_instagram_data
 from .models          import *
 
 class FilterView(View):
@@ -117,7 +117,7 @@ class DetailView(View):
                 'information'  : selected_product.detail.information,
             }]
 
-            return JsonResponse({'product_detail' : data, 'recommendations' : get_recommendations(selected_product)}, status = 200)
+            return JsonResponse({'product_detail' : data, 'instagram' : get_instagram_data(), 'recommendations' : get_recommendations(selected_product)}, status = 200)
 
         except Product.DoesNotExist:
             return JsonResponse({'Message' : 'PRODUCT_DOES_NOT_EXIST'}, status = 400)

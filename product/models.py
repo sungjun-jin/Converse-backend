@@ -22,6 +22,7 @@ class Product(models.Model):
     gender        = models.CharField(max_length = 45)
     color_name    = models.CharField(max_length = 45)
     is_sneakers   = models.BooleanField(default = False)
+    is_main_page  = models.BooleanField(default = False)
     silhouette    = models.ForeignKey('Silhouette', on_delete = models.SET_NULL, null = True)
     category      = models.ForeignKey('Category', on_delete = models.SET_NULL, null = True)
     group         = models.ForeignKey('Group', on_delete = models.SET_NULL, null = True)
