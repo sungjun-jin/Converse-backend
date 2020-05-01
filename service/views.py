@@ -16,8 +16,7 @@ class CartView(View):
         try:
             selected_product = Product.objects.get(code = data['code'])
             selected_size = Size.objects.get(size = data['size'])
-            request_user = User.objects.get(id = request.user.id)
-            Cart.objects.create(product = selected_product, size = selected_size, user = request_user, quantity = data['quantity'])
+            Cart.objects.create(product = selected_product, size = selected_size, user = request.user, quantity = data['quantity'])
 
             return HttpResponse(status = 200)
 
@@ -26,8 +25,7 @@ class CartView(View):
 
     @login_required
     def get(self,request):
-        request_user = User.objects.get(id = request.user.id)
-        carts = Cart.objects.select_related('product', 'size').prefetch_related('product__media_set').filter(user = request_user)
+        carts = Cart.objects.select_related('product', 'size').prefetch_related('product__media_set').filter(user = request.user)
         data = [
             {
             'name':cart.product.name,
