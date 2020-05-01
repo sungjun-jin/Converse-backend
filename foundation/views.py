@@ -15,15 +15,13 @@ class MainPageView(View):
         try:
             data = json.loads(request.body)
             size = int(data['one'])
-            products = Product.objects.prefetch_related('media_set').filter(name__contains = data['category'], is_main_page = 1)[:size]
+            products = Product.objects.prefetch_related('media_set').filter(name__contains = data['category'], is_main_page = True)[:size]
             cards = [{
-
                 'name'  : product.name,
                 'code'  : product.code,
                 'price' : product.price,
                 'url'   : product.media_set.values('media_url').first()['media_url'],
                 'hover' : product.media_set.values('media_url')[1]['media_url'],
-
             } for product in products]
 
             return JsonResponse({'cards' : cards}, status = 200)
