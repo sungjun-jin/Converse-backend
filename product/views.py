@@ -127,7 +127,7 @@ def get_recommendations(selected_product):
     data = [{
             'code'  : recommendation.code,
             'url'   : recommendation.media_set.filter(media_url__contains = 'primary').first().media_url,
-            'hover' : recommendation.media_set.filter()[2].media_url,
+            'hover' : recommendation.media_set.filter().last().media_url,
     } for recommendation in recommendations]
 
     return data
