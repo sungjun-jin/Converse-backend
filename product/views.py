@@ -47,25 +47,31 @@ class ProductView(View):
     def get(self, request,category_name):
 
         products  = Product.objects.filter(
-            Q(category__name = category_name)| Q(group__name = category_name))
-
-        filter_dict = {}
-
-        if request.GET.getlist('gender', None):
-            filter_dict['gender__in'] = request.GET.getlist('gender', None)+['남녀공용','유니섹스']
-        if request.GET.getlist('color', None):
-            filter_dict['product_color__color_code__in'] = ['#'+color for color in request.GET.getlist('color', None)]
-        if request.GET.getlist('size', None):
-            filter_dict['product_size__size__in'] = request.GET.getlist('size', None)
-        if request.GET.getlist('silhouette', None):
-            filter_dict['silhouette_id__name__in'] = request.GET.getlist('silhouette', None)
+            Q(category__name = category_name)| Q(group__name = category_name)
+        )
 
         sources      = products.prefetch_related('series_set','media_set','product_color')
-        product_list = [product for product in products.filter(**filter_dict).values('id','code','name','price')][:30]
+        product_list = [
+            product for product in products.filter(
+                **{
+                    (
+                        key + '__in' if key == 'gender' else
+                        'product_' + key + '__' + key + '_code__in' if key == 'color' else
+                        'product_' + key + '__' + key + '__in' if key == 'size' else
+                        key + '_id__name__in'
+                    ) : (
+                        request.GET.getlist(key) + ['남녀공용', '유니섹스']
+                        if key == 'gender' else
+                        request.GET.getlist('key')
+                    )
+                    for key in request.GET
+                    if key in ['gender','color','size','silhouette']
+                }
+            ).values('id','code','name','price')][:30]
 
-        for product in product_list:
+        try:
 
-            try:
+            for product in product_list:
 
                 product['color_list'] = []
 
@@ -87,7 +93,7 @@ class ProductView(View):
                         'hover'      : image.replace('primary','hover')
                     })
 
-            except Product.DoesNotExist:
+        except Product.DoesNotExist:
 
                 image = sources.get(id=product['id']).media_set.values('media_url').first()['media_url']
 
@@ -97,7 +103,9 @@ class ProductView(View):
                     'image'      : image,
                     'hover'      : image.replace('primary','hover')}
 
-        return JsonResponse({'product' : product_list},status=200)
+        if product_list:
+            return JsonResponse({'product' : product_list},status=200)
+        return HttpResponse(status=404)
 
 class DetailView(View):
     def get(self,request,product_code):
